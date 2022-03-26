@@ -61,7 +61,6 @@ COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
-DEFAULT_DATASET_YEAR = "2014"
 
 DEFAULT_EPOCHS = 40
 
@@ -87,6 +86,8 @@ class CocoConfig(Config):
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 5  # COCO has 80 classes
+
+    STEPS_PER_EPOCH = 100
 
 
 ############################################################
@@ -412,7 +413,7 @@ if __name__ == '__main__':
                         metavar="/path/to/weights.h5",
                         help="Path to weights .h5 file or 'coco'")
     parser.add_argument('--epochs', required=False,
-                        typr=int,
+                        type=int,
                         default=DEFAULT_EPOCHS,
                         help='Number of learning epochs (default=40)')
     parser.add_argument('--logs', required=False,
@@ -471,8 +472,10 @@ if __name__ == '__main__':
         model_path = args.model
 
     # Load weights
+    # Pass exclude parameters because we have a confliscts with generated array shapes
     print("Loading weights ", model_path)
-    model.load_weights(model_path, by_name=True)
+    model.load_weights(model_path, by_name=True, exclude = ["mrcnn_class_logits", "mrcnn_bbox_fc",
+                                                                "mrcnn_bbox", "mrcnn_mask"])
 
     # Train or evaluate
     if args.command == "train":
